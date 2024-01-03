@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Locale;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DownloadExample {
-    static int count = 0;
+    static AtomicInteger count = new AtomicInteger(0);
+    static Semaphore sem = new Semaphore(0);
 
     // lista plików do pobrania
     static String [] toDownload = {
@@ -45,7 +48,11 @@ public class DownloadExample {
                 e.printStackTrace();
             }
             System.out.println("Done:"+fileName);
-            count+=1;
+
+            // Download2
+            count.incrementAndGet();
+            // Download3
+            sem.release();
         }
 
         static void sequentialDownload(){
@@ -71,14 +78,33 @@ public class DownloadExample {
             for(String url:toDownload){
                 new Thread(new Downloader(url)).start();
             }
-            double t2 = System.nanoTime()/1e6;
-
-            while(count!=toDownload.length){
+            while(count.get() != toDownload.length){
                 Thread.yield();
             }
+
+            double t2 = System.nanoTime()/1e6;
+
             System.out.println("ilosc pobranych: " + count);
             System.out.printf(Locale.US,"t2-t1=%f\n",t2-t1);
 
+        }
+
+        static void concurrentDownload3(){
+            double t1 = System.nanoTime()/1e6;
+            for(String url:toDownload){
+                new Thread(new Downloader(url)).start();
+            }
+            // waiting...
+            try {
+                sem.acquire(toDownload.length);
+            } catch(InterruptedException e){
+                System.out.println("Exception: " + e);
+            }
+
+            double t2 = System.nanoTime()/1e6;
+
+            System.out.println("ilosc pobranych: " + count);
+            System.out.printf(Locale.US,"t2-t1=%f\n",t2-t1);
         }
     }
 }

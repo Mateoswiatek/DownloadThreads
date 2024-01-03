@@ -4,6 +4,7 @@ public class Main {
     public static void main(String[] args) {
         //DownloadExample.Downloader.sequentialDownload();
         //DownloadExample.Downloader.concurrentDownload();
-        DownloadExample.Downloader.concurrentDownload2();
+        //DownloadExample.Downloader.concurrentDownload2();
+        DownloadExample.Downloader.concurrentDownload3();
     }
 }
